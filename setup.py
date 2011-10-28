@@ -17,21 +17,20 @@ Topic :: Education
 Topic :: Software Development :: Libraries :: Python Modules
 """
 
-setup(name             = 'airse',
-      version          = '0.0.1',
-      author           = 'Filipe Fernandes',
-      author_email     = 'ocefpaf@gmail.com',
-      maintainer       = 'Filipe Fernandes',
-      maintainer_email = 'ocefpaf@gmail.com',
-      url              = 'http://ocefpaf.tiddlyspot.com/#python-airsea',
-      description      = 'AirSea Libray for Python',
-      long_description = """\
-This module is a translation of the original AIRSEA-2.0 MATLAB toolbox routines for calculating the properties of airsea fluxes.
-""",
-      download_url     = 'http://pypi.python.org/packages/source/a/airsea/',
-      packages         = ['airsea'], #FIXME
-      classifiers      = filter(None, classifiers.split("\n")),
-      platforms        = 'any',
-      license          = 'MIT',
-      keywords         = 'oceanography  airsea',
-    )
+setup(name='airse',
+      version='0.0.1',
+      author='Filipe Fernandes',
+      author_email='ocefpaf@gmail.com',
+      maintainer='Filipe Fernandes',
+      maintainer_email='ocefpaf@gmail.com',
+      url='http://ocefpaf.tiddlyspot.com/#python-airsea',
+      description='AirSea Libray for Python',
+      long_description="""\
+This module is a translation of the original AIRSEA-2.0 MATLAB toolbox
+routines for calculating the properties of airsea fluxes.""",
+      download_url='http://pypi.python.org/packages/source/a/airsea/',
+      packages=['airsea'],  # FIXME
+      classifiers=filter(None, classifiers.split("\n")),
+      platforms='any',
+      license='MIT',
+      keywords='oceanography  airsea')

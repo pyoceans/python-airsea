@@ -6,6 +6,7 @@ from airsea import constants as cte
 Most of these functions came from the Matlab air sea toolbox:
 """
 
+
 def cdn(sp, z, drag='largepond', Ta=10):
     """
     Computes neutral drag coefficient.
@@ -58,7 +59,8 @@ def cdn(sp, z, drag='largepond', Ta=10):
     ----------
     .. [1] Large and Pond (1981), J. Phys. Oceanog., 11, 324-336.
     .. [2] Smith (1988), J. Geophys. Res., 93, 311-326.
-    .. [3] E. Vera (1983) FIXME eqn. 8 in Large, Morzel, and Crawford (1995), J. Phys. Oceanog., 25, 2959-2971.
+    .. [3] E. Vera (1983) FIXME eqn. 8 in Large, Morzel, and Crawford (1995),
+    J. Phys. Oceanog., 25, 2959-2971.
 
     Modifications: Original from AIR_SEA TOOLBOX, Version 2.0
     03-08-1997: version 1.0
@@ -69,43 +71,45 @@ def cdn(sp, z, drag='largepond', Ta=10):
     # convert input to numpy array
     sp, z, Ta = np.asarray(sp), np.asarray(z), np.asarray(Ta)
 
-    tol = 0.00001 # iteration end point
+    tol = 0.00001  # Iteration end point.
 
     if drag == 'largepond':
-        a = np.log( z / 10. ) / cte.kappa # log-layer correction factor
-        u10o = np.zeros( sp.shape )
-        cd = 1.15e-3 * np.ones( sp.shape )
-        u10 = sp / ( 1 + a * np.sqrt(cd) )
-        ii = np.abs( u10 - u10o ) > tol
+        a = np.log(z / 10.) / kappa  # Log-layer correction factor.
+        u10o = np.zeros(sp.shape)
+        cd = 1.15e-3 * np.ones(sp.shape)
+        u10 = sp / (1 + a * np.sqrt(cd))
+        ii = np.abs(u10 - u10o) > tol
 
-        while np.any( ii ):
+        while np.any(ii):
             u10o = u10
-            cd = ( 4.9e-4 + 6.5e-5 * u10o ) # compute cd(u10)
+            cd = (4.9e-4 + 6.5e-5 * u10o)  # Compute cd(u10).
             cd[u10o < 10.15385] = 1.15e-3
-            u10 = sp / ( 1 + a * np.sqrt(cd) ) #next iteration
-            ii = np.abs( u10 - u10o ) > tol # keep going until iteration converges
+            u10 = sp / (1 + a * np.sqrt(cd))  # Next iteration.
+            # Keep going until iteration converges.
+            ii = np.abs(u10 - u10o) > tol
+
     elif drag == 'smith':
         visc = asea.visc_air(Ta)
 
         # remove any sp==0 to prevent division by zero
-        i = np.nonzero(sp==0)
+        i = np.nonzero(sp == 0)
 
         #sp[i] = 0.1 * np.ones(len(i)) FIXME
 
         # initial guess
-        ustaro = np.zeros( sp.shape )
+        ustaro = np.zeros(sp.shape)
         ustarn = 0.036 * sp
 
         # iterate to find z0 and ustar
-        ii = np.abs( ustarn - ustaro ) > tol
+        ii = np.abs(ustarn - ustaro) > tol
         while np.any(ii):
             ustaro = ustarn
-            z0 = cte.Charnock_alpha * ustaro**2 / cte.g + cte.R_roughness * visc / ustaro
-            ustarn = sp * ( cte.kappa / np.log( z/z0 ) )
-            ii = np.abs( ustarn - ustaro ) > tol
+            z0 = Charnock_alpha * ustaro ** 2 / g + R_roughness * visc / ustaro
+            ustarn = sp * (kappa / np.log(z / z0))
+            ii = np.abs(ustarn - ustaro) > tol
 
-        sqrcd = cte.kappa / np.log( 10./z0 )
-        cd = sqrcd**2
+        sqrcd = kappa / np.log(10. / z0)
+        cd = sqrcd ** 2
         u10 = ustarn / sqrcd
     elif drag == 'vera':
         # constants in fit for drag coefficient
@@ -113,26 +117,29 @@ def cdn(sp, z, drag='largepond', Ta=10):
         B = 0.142e-3
         C = 0.0764e-3
 
-        a = np.log( z / 10.) / cte.kappa # log-layer correction factor
-
-        u10o = np.zeros( sp.shape ) + 0.1 # don't start iteration at 0 to prevent blowups
+        a = np.log(z / 10.) / kappa  # Log-layer correction factor.
+        # Don't start iteration at 0 to prevent blowups.
+        u10o = np.zeros(sp.shape) + 0.1
         cd = A / u10o + B + C * u10o
-        u10 = sp / ( 1 + a * np.sqrt(cd) )
+        u10 = sp / (1 + a * np.sqrt(cd))
 
-        ii = np.abs( u10 - u10o ) > tol
+        ii = np.abs(u10 - u10o) > tol
         while np.any(ii):
             u10o = u10
             cd = A / u10o + B + C * u10o
-            u10 = sp / ( 1 + a * np.sqrt(cd) ) # next iteration
-            ii = np.abs( u10 - u10o ) > tol # keep going until iteration converges
+            u10 = sp / (1 + a * np.sqrt(cd))  # Next iteration.
+            # Keep going until iteration converges.
+            ii = np.abs(u10 - u10o) > tol
     else:
-        print 'Unknown method' # add a proper python error
+        print('Unknown method')  # TODO: Add a proper python error.
 
     return cd, u10
 
+
 def spshft(sp, z1, z2, drag='largepond', Ta=10.):
     """
-    Adjusts wind speed from height z1 to z2. Methods available are: Large & Pond (1981),  Vera (1983) or Smith (1988)
+    Adjusts wind speed from height z1 to z2. Methods available are: Large &
+    Pond (1981),  Vera (1983) or Smith (1988).
 
     Parameters
     ----------
@@ -184,7 +191,8 @@ def spshft(sp, z1, z2, drag='largepond', Ta=10.):
     ----------
     .. [1] Large and Pond (1981), J. Phys. Oceanog., 11, 324-336.
     .. [2] Smith (1988), J. Geophys. Res., 93, 311-326.
-    .. [3] E. Vera (1983) FIXME eqn. 8 in Large, Morzel, and Crawford (1995), J. Phys. Oceanog., 25, 2959-2971.
+    .. [3] E. Vera (1983) FIXME eqn. 8 in Large, Morzel, and Crawford (1995),
+    J. Phys. Oceanog., 25, 2959-2971.
 
     Modifications: Original from AIR_SEA TOOLBOX, Version 2.0
     03-08-1997: version 1.0
@@ -192,8 +200,8 @@ def spshft(sp, z1, z2, drag='largepond', Ta=10.):
     08-05-1999: version 2.0
     11-26-2010: Filipe Fernandes, Python translation.
     """
-    # convert input to numpy array
-    z1, z2, sp, Ta = np.asarray(z1), np.asarray(z2), np.asarray(sp), np.asarray(Ta)
+
+    z1, z2, sp, Ta = map(np.asarray, (z1, z2, sp, Ta))
 
     # find cd and ustar
     if drag == 'largepond':
@@ -203,11 +211,12 @@ def spshft(sp, z1, z2, drag='largepond', Ta=10.):
     elif drag == 'vera':
         cd10, sp10 = cdn(sp, z1, 'vera')
     else:
-        print 'Unknown method' # add a proper python error
+        print('Unknown method')  # TODO: add a proper python error
 
     ustar = np.sqrt(cd10) * sp10
-    sp_adj   = sp10 + ustar * np.log(z2 / 10.) / cte.kappa
+    sp_adj = sp10 + ustar * np.log(z2 / 10.) / kappa
     return sp_adj, ustar
+
 
 def stress(sp, z=10., drag='largepond', rho_air=1.22, Ta=10.):
     """
@@ -259,7 +268,8 @@ def stress(sp, z=10., drag='largepond', rho_air=1.22, Ta=10.):
     ----------
     .. [1] Large and Pond (1981), J. Phys. Oceanog., 11, 324-336.
     .. [2] Smith (1988), J. Geophys. Res., 93, 311-326.
-    .. [3] E. Vera (1983) FIXME eqn. 8 in Large, Morzel, and Crawford (1995), J. Phys. Oceanog., 25, 2959-2971.
+    .. [3] E. Vera (1983) FIXME eqn. 8 in Large, Morzel, and Crawford (1995),
+    J. Phys. Oceanog., 25, 2959-2971.
 
     Modifications: Original from AIR_SEA TOOLBOX, Version 2.0
     03-08-1997: version 1.0
@@ -268,7 +278,7 @@ def stress(sp, z=10., drag='largepond', rho_air=1.22, Ta=10.):
     08-05-1999: version 2.0
     11-26-2010: Filipe Fernandes, Python translation.
     """
-    z, sp, Ta, rho_air = np.asarray(z), np.asarray(sp), np.asarray(Ta), np.asarray(rho_air)
+    z, sp, Ta, rho_air = map(np.asarray, (z, sp, Ta, rho_air))
 
     # find cd and ustar
     if drag == 'largepond':
@@ -278,9 +288,9 @@ def stress(sp, z=10., drag='largepond', rho_air=1.22, Ta=10.):
     elif drag == 'vera':
         cd, sp = cdn(sp, z, 'vera')
     else:
-        print 'Unknown method' # add a proper python error
+        print('Unknown method')  # TODO: add a proper python error
 
-    tau = rho_air * ( cd * sp**2)
+    tau = rho_air * (cd * sp ** 2)
 
     return tau
 
