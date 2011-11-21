@@ -403,7 +403,7 @@ def ep(rfd, Qlat, dt=3600):
 
     return E, P
 
-
+#http://www.ncl.ucar.edu/Document/Functions/Built-in/relhum.shtml
 def relhumid(Td, Tw, Pa=1020, p_typ='screen'):
     """
     Finds relative humidity from wet/dry thermometer readings using the
