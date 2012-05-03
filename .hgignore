@@ -4,3 +4,5 @@ _build
 .swp*
 .directory
 TODO
+.hgignore
+TODO-AIRSEA
