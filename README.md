@@ -1,4 +1,5 @@
 python-airsea
 =============
 
-This module contains a translation of the original AIR_SEA toolbox for Matlab.
+This module is a translation of the original AIRSEA-2.0 MATLAB toolbox
+routines for calculating the properties of airsea fluxes.
