@@ -1,15 +1,25 @@
-import numpy as np
-from airsea import atmosphere as asea
-from airsea import constants as cte
+# -*- coding: utf-8 -*-
+#
+# windstress.py
+#
+# purpose:
+# author:   Filipe P. A. Fernandes
+# e-mail:   ocefpaf@gmail
+# web:      http://ocefpaf.github.io/
+# created:  21-Aug-2013
+# modified: Thu 08 May 2014 07:59:14 AM BRT
+#
+# obs:
+#
 
-"""
-Most of these functions came from the Matlab air sea toolbox:
-"""
+import numpy as np
+
+from .constants import kappa
+from .atmosphere import visc_air
 
 
 def cdn(sp, z, drag='largepond', Ta=10):
-    """
-    Computes neutral drag coefficient.
+    """Computes neutral drag coefficient.
     Methods available are: Large & Pond (1981),  Vera (1983) or Smith (1988)
 
     Parameters
@@ -45,14 +55,17 @@ def cdn(sp, z, drag='largepond', Ta=10):
     --------
     >>> from airsea import windstress as ws
     >>> ws.cdn([10., 0.2, 12., 20., 30., 50.], 10)
-    (array([ 0.00115,  0.00115,  0.00127,  0.00179,  0.00244,  0.00374]), array([ 10. ,   0.2,  12. ,  20. ,  30. ,  50. ]))
+    (array([ 0.00115,  0.00115,  0.00127,  0.00179,  0.00244,  0.00374]),
+     array([ 10. ,   0.2,  12. ,  20. ,  30. ,  50. ]))
     >>> ws.cdn([10., 0.2, 12., 20., 30., 50.], 15, 'vera')
     (array([ 0.00116157,  0.01545237,  0.00126151,  0.00174946,  0.00242021,
-            0.00379521]), array([  9.66606155,   0.17761896,  11.58297824,  19.18652915,
+            0.00379521]),
+     array([  9.66606155,   0.17761896,  11.58297824, 19.18652915,
             28.5750255 ,  47.06117334]))
     >>> ws.cdn([10., 0.2, 12., 20., 30., 50.], 20, 'smith', 20.)
     (array([ 0.00126578,  0.00140818,  0.00136533,  0.00173801,  0.00217435,
-            0.00304636]), array([  9.41928554,   0.18778865,  11.27787697,  18.65250005,
+            0.00304636]),
+     array([  9.41928554,   0.18778865,  11.27787697,  18.65250005,
             27.75712916,  45.6352786 ]))
 
     References
@@ -89,9 +102,9 @@ def cdn(sp, z, drag='largepond', Ta=10):
             ii = np.abs(u10 - u10o) > tol
 
     elif drag == 'smith':
-        visc = asea.visc_air(Ta)
+        visc = visc_air(Ta)
 
-        # remove any sp==0 to prevent division by zero
+        # Remove any sp==0 to prevent division by zero
         i = np.nonzero(sp == 0)
 
         #sp[i] = 0.1 * np.ones(len(i)) FIXME
@@ -313,7 +326,7 @@ def stress(sp, z=10., drag='largepond', rho_air=1.22, Ta=10.):
 #>>> y = waveplt(za)
 #subroutines called:
 #>>> y = omegalmc(x)
-#>>> cd10 = aseacdnve(u10)
+#>>> cd10 = cdnve(u10)
 #"""
 
 #def omegalmc(x):
@@ -341,8 +354,7 @@ def stress(sp, z=10., drag='largepond', rho_air=1.22, Ta=10.):
 
     #Examples
     #--------
-    #>>> from airsea import atmosphere as asea
-    #>>> asea.omegalmc([TODO])
+    #>>> omegalmc([TODO])
     #array([TODO])
 
     #References
@@ -432,7 +444,7 @@ def stress(sp, z=10., drag='largepond', rho_air=1.22, Ta=10.):
         #U10o = U10
         #k    = k + 1
         #Ustar = np.sqrt( cdnve(U10, 10) * U10**2)
-        #U10   = Ua + Ustar * (np.log( zs / za ) - omegalmc(Xis) + omegalmc(Xia) ) / cte.kappa
+        #U10   = Ua + Ustar * (np.log( zs / za ) - omegalmc(Xis) + omegalmc(Xia) ) / kappa
 
 
     #if k == 15:
@@ -481,7 +493,7 @@ def stress(sp, z=10., drag='largepond', rho_air=1.22, Ta=10.):
     ## convert input to numpy array
     #Ua = np.asarray(Ua) ; za = np.asarray(za) ; Hw = np.asarray(Hw)
 
-    #k   = 0.4 #FIXME: cte.kappa
+    #k   = 0.4 #FIXME: kappa
     #z10 = 10
     #A = np.log( z10 / za ) / k
 
