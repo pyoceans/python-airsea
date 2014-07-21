@@ -3,14 +3,13 @@
 from __future__ import division
 
 import numpy as np
-from airsea.constants import eps_air, gas_const_R, CtoK, P_default
+from .constants import eps_air, gas_const_R, CtoK, P_default
 
 """Most of these functions came from the Matlab air sea toolbox."""
 
 
 def vapor(Tw):
-    r"""
-    Calculates heat of evaporation for pure water.
+    """Calculates heat of evaporation for pure water.
 
     Parameters
     ----------
@@ -21,10 +20,6 @@ def vapor(Tw):
     -------
     L : array_like
         heat of evaporation [J kg :sup:`-1`]
-
-    See Also
-    --------
-    TODO: None
 
     Notes
     -----
@@ -63,8 +58,7 @@ def vapor(Tw):
 
 
 def air_dens(Ta, rh, Pa=P_default):
-    r"""
-    Computes the density of moist air.
+    """Computes the density of moist air.
 
     Parameters
     ----------
@@ -84,10 +78,6 @@ def air_dens(Ta, rh, Pa=P_default):
     --------
     TODO: qsat
 
-    Notes
-    -----
-    TODO: None
-
     Examples
     --------
     >>> from airsea import atmosphere as asea
@@ -95,10 +85,6 @@ def air_dens(Ta, rh, Pa=P_default):
     array([ 1.27361105,  1.22578105,  1.18750778])
     >>> asea.air_dens([5., 15., 23.1], [95, 100, 50], 900)
     array([ 1.12331233,  1.08031123,  1.05203796])
-
-    References
-    ----------
-    TODO
 
     Modifications: Original from AIR_SEA TOOLBOX, Version 2.0
     04/07/1999: version 1.2 (contributed by AA)
@@ -116,67 +102,11 @@ def air_dens(Ta, rh, Pa=P_default):
 
     return rhoa
 
-#def delq(Ts, Ta, rh):
-    #r"""
-    #Computes air-sea specific humidity difference between the air (as
-    #determined by relative humidity [rh] and air temperature [Ta]
-    #measurements) and the sea surface (where q is assumed to be at 98%
-    #saturation at the sea surface temperature Ts).
-
-    #Parameters
-    #----------
-    #Ts : array_like
-         #sea surface temperature [:math:`^\\circ` C]
-    #Ta : array_like
-         #air temperature [:math:`^\\circ` C]
-    #rh : array_like
-         #relative humidity [percent]
-
-    #Returns
-    #-------
-    #dq : array_like
-         #air-sea specific humidity difference  [kg kg :sup:`-1`]
-
-    #See Also
-    #--------
-    #TODO: qsat
-
-    #Notes
-    #-----
-    #Uses qsat based on Tetens' formula for saturation vapor pressure.
-    #FIXME: Qsat can use pressure as input, but delq cannot!!!
-
-    #Examples
-    #--------
-    #>>> from airsea import atmosphere as asea
-    #>>> asea.delq([-1, 0.5, 15, 30], [-5, 21.0, 33.2, 40.] , 10)
-    #array([-0.00315843, -0.00227574, -0.00711822, -0.02122469])
-
-    #References
-    #----------
-    #.. [1] Buck (1981), J. App. Meteor., 1527-1532.
-
-    #The dependence of qsat on pressure is small (<0.5%) and has been
-    #removed using a mean pressure of 1020 mb.
-
-    #Modifications: Original from AIR_SEA TOOLBOX, Version 2.0
-    #03/18/1997: version 1.0
-    #04/10/1998: version 1.1
-    #08/15/1999: version 2.0
-    #11/26/2010: Filipe Fernandes, Python translation.
-    #"""
-    ## convert input to numpy array
-    #Ts, Ta, rh = np.asarray(Ts), np.asarray(Ta), np.asarray(rh)
-    # 0.01 to get ratio from percent
-    #dq = 0.01 * rh * qsat(Ta) - 0.98 * qsat(Ts)
-    #return dq
-
 
 def qsat(Ta, Pa=P_default, sflag=True):
-    r"""
-    Computes the specific humidity [kg/kg] at saturation at air temperature Ta
-    [deg C].  Dependence on air pressure, Pa, is small, but is included as an
-    optional input.
+    """Computes the specific humidity [kg/kg] at saturation at air temperature
+    Ta [deg C].  Dependence on air pressure, Pa, is small, but is included as
+    an optional input.
 
     Parameters
     ----------
@@ -222,7 +152,7 @@ def qsat(Ta, Pa=P_default, sflag=True):
 
     # Fortran code for COARE v2.5b
     ew = (6.1121 * (1.0007 + 3.46e-6 * Pa) *
-           np.exp((17.502 * Ta) / (240.97 + Ta)))  # [mb]
+          np.exp((17.502 * Ta) / (240.97 + Ta)))  # [mb]
     qsat = 621.97 * (ew / (Pa - 0.378 * ew))  # [mb] -> [g/kg]
     qsat = (1.0 - 0.02 * sflag) * qsat  # flag for fresh (0) or salt (1) water
 
@@ -234,8 +164,7 @@ def qsat(Ta, Pa=P_default, sflag=True):
 
 
 def satvap(Ta, Pa=P_default):
-    r"""
-    Computes saturation vapor pressure.
+    """Computes saturation vapor pressure.
 
     Parameters
     ----------
@@ -252,10 +181,6 @@ def satvap(Ta, Pa=P_default):
     See Also
     --------
     TODO: blwhf, relhumid
-
-    Notes
-    -----
-    TODO
 
     Examples
     --------
@@ -280,15 +205,14 @@ def satvap(Ta, Pa=P_default):
     11/26/2010: Filipe Fernandes, Python translation.
     """
 
-    Ta, Pa = map(np.asarray, np.asarray(Ta, Pa))
+    Ta, Pa = np.asarray(Ta), np.asarray(Pa)
     ew = np.power(10., ((0.7859 + 0.03477 * Ta) / (1 + 0.00412 * Ta)))
     fw = 1 + 1e-6 * Pa * (4.5 + 0.0006 * Ta ** 2)
-    return  fw * ew
+    return fw * ew
 
 
 def rhadj(rh, rhmax):
-    r"""
-    Rescales RH to have a maximum of 100%.
+    """Rescales RH to have a maximum of 100%.
 
     Parameters
     ----------
@@ -302,14 +226,10 @@ def rhadj(rh, rhmax):
     rhadj : array_like
             adjusted relative humidity [percent]
 
-    See Also
-    --------
-    TODO: None
-
     Notes
     -----
-    Rescaling rh is needed to avoid the maximum values to exceed 100%. Assumes
-    values between 93% and rhmax should be rescaled to 93 - 100%.
+    Re-scaling rh is needed to avoid the maximum values to exceed 100%. Assumes
+    values between 93% and rhmax should be re-scaled to 93 - 100%.
 
     The calibration curves of rh sensors usually become nonlinear above ~ 90%,
     and may peak above 100% in this range above ~ 90% where their calibration
@@ -321,17 +241,13 @@ def rhadj(rh, rhmax):
     >>> asea.rhadj([98., 95., 94., 93., 10., 20.], 98.)
     array([ 100. ,   95.8,   94.4,   93. ,   10. ,   20. ])
 
-    References
-    ----------
-    TODO
-
     Modifications: Original from AIR_SEA TOOLBOX, Version 2.0
     04/10/1998: version 1.0
     08/05/1999: version 2.0
     11/26/2010: Filipe Fernandes, Python translation.
     """
 
-    rh, rhmax = map(np.asarray, (rh, rhmax))
+    rh, rhmax = np.asarray(rh), np.asarray(rhmax)
 
     rhl = 93.
     rhn = rh
@@ -343,8 +259,7 @@ def rhadj(rh, rhmax):
 
 
 def ep(rfd, Qlat, dt=3600):
-    r"""
-    Computes precipitation and evaporation accumulation from rainfall rate
+    """Computes precipitation and evaporation accumulation from rainfall rate
     (rfd) and latent heat (Qlat).
 
     Parameters
@@ -363,10 +278,6 @@ def ep(rfd, Qlat, dt=3600):
     E : array_like
         evaporation accumulation [m]
 
-    See Also
-    --------
-    TODO: None
-
     Notes
     -----
     Convert precipitation from [mm min :sup:`-1`] to [ m s :sup:`-1`]
@@ -382,32 +293,28 @@ def ep(rfd, Qlat, dt=3600):
     >>> asea.ep(np.array(rfd)/1000/60, Qlat)[1] # Precipitation
     array([ 0.6,  1.5,  3.6])
 
-    References
-    ----------
-    TODO
-
     Modifications: Original from AIR_SEA TOOLBOX, Version 2.0
     08/05/1999: version 2.0
     11/26/2010: Filipe Fernandes, Python translation.
     """
 
-    rfd, Qlat = map(np.asarray, (rfd, Qlat))
+    rfd, Qlat = np.asarray(rfd), np.asarray(Qlat)
 
     P = np.cumsum(rfd)
     P = P * dt
 
     Le = 2.5e6  # heat of vaporization [W/m**2]
     pw = 1025.  # density of seawater [kg/m**3] at 32 psu, 10 degC, 0 db
-    #dt = 3600 # seconds per hour FIXME
     E = np.cumsum(Qlat) * dt / (Le * pw)
 
     return E, P
 
-#http://www.ncl.ucar.edu/Document/Functions/Built-in/relhum.shtml
+
 def relhumid(Td, Tw, Pa=1020, p_typ='screen'):
-    """
-    Finds relative humidity from wet/dry thermometer readings using the
+    """Finds relative humidity from wet/dry thermometer readings using the
     psychrometric equation.
+
+    # TODO: http://www.ncl.ucar.edu/Document/Functions/Built-in/relhum.shtml
 
     Parameters
     ----------
@@ -431,10 +338,6 @@ def relhumid(Td, Tw, Pa=1020, p_typ='screen'):
     --------
     TODO: satvap
 
-    Notes
-    -----
-    TODO
-
     Examples
     --------
     >>> from airsea import atmosphere as asea
@@ -452,10 +355,9 @@ def relhumid(Td, Tw, Pa=1020, p_typ='screen'):
     08/05/1999: version 2.0
     11/26/2010: Filipe Fernandes, Python translation.
     """
-    # convert input to numpy array
     Td, Tw, Pa = np.asarray(Td), np.asarray(Tw), np.asarray(Pa)
 
-    # psychrometric coefficient
+    # Psychrometric coefficient.
     if p_typ is 'screen':
         A = 0.000799  # Natural screens.
     elif p_typ is 'assman':
@@ -464,19 +366,18 @@ def relhumid(Td, Tw, Pa=1020, p_typ='screen'):
         print('unknown psychrometer type: %s' % p_typ)
         A = np.NaN  # FIXME: Add an proper python error
 
-    # compute saturation vapor pressure for both temperatures
+    # Compute saturation vapor pressure for both temperatures.
     ed = satvap(Td, Pa)
     ewp = satvap(Tw, Pa)
 
-    #% The psychrometric equation
+    # The psychrometric equation.
     e = ewp - A * Pa * (Td - Tw)  # Ambient vapor pressure.
     rh = e / ed * 100
     return rh
 
 
 def cloudcor(C, optns, lat):
-    """
-    Computes cloud correction factor for bulk long-wave flux as a function of
+    """Computes cloud correction factor for bulk long-wave flux as a function of
     the cloud fraction "C" for bulk long-wave flux formulae.
 
     Parameters
@@ -585,8 +486,7 @@ def cloudcor(C, optns, lat):
 
 
 def visc_air(Ta):
-    """
-    Computes the kinematic viscosity of dry air as a function of air
+    """Computes the kinematic viscosity of dry air as a function of air
     temperature
 
     Parameters
@@ -626,5 +526,5 @@ def visc_air(Ta):
     Ta = np.asarray(Ta)
 
     visa = 1.326e-5 * (1 + 6.542e-3 * Ta + 8.301e-6 * Ta ** 2 - 4.84e-9 *
-                                                                      Ta ** 3)
+                       Ta ** 3)
     return visa

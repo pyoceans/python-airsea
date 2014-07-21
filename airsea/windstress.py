@@ -7,14 +7,14 @@
 # e-mail:   ocefpaf@gmail
 # web:      http://ocefpaf.github.io/
 # created:  21-Aug-2013
-# modified: Thu 08 May 2014 07:59:14 AM BRT
+# modified: Mon 21 Jul 2014 12:16:28 PM BRT
 #
 # obs:
 #
 
 import numpy as np
 
-from .constants import kappa
+from .constants import kappa, Charnock_alpha, g, R_roughness
 from .atmosphere import visc_air
 
 
@@ -105,9 +105,8 @@ def cdn(sp, z, drag='largepond', Ta=10):
         visc = visc_air(Ta)
 
         # Remove any sp==0 to prevent division by zero
-        i = np.nonzero(sp == 0)
-
-        #sp[i] = 0.1 * np.ones(len(i)) FIXME
+        # i = np.nonzero(sp == 0)
+        # sp[i] = 0.1 * np.ones(len(i)) FIXME
 
         # initial guess
         ustaro = np.zeros(sp.shape)
@@ -144,14 +143,13 @@ def cdn(sp, z, drag='largepond', Ta=10):
             # Keep going until iteration converges.
             ii = np.abs(u10 - u10o) > tol
     else:
-        print('Unknown method')  # TODO: Add a proper python error.
+        print('Unknown method')  # FIXME: raise a proper python error.
 
     return cd, u10
 
 
 def spshft(sp, z1, z2, drag='largepond', Ta=10.):
-    """
-    Adjusts wind speed from height z1 to z2. Methods available are: Large &
+    """Adjusts wind speed from height z1 to z2. Methods available are: Large &
     Pond (1981),  Vera (1983) or Smith (1988).
 
     Parameters
@@ -180,10 +178,6 @@ def spshft(sp, z1, z2, drag='largepond', Ta=10.):
     See Also
     --------
     cdn
-
-    Notes
-    -----
-    TODO
 
     Examples
     --------
@@ -214,9 +208,10 @@ def spshft(sp, z1, z2, drag='largepond', Ta=10.):
     11-26-2010: Filipe Fernandes, Python translation.
     """
 
-    z1, z2, sp, Ta = map(np.asarray, (z1, z2, sp, Ta))
+    z1, z2 = np.asarray(z1), np.asarray(z2)
+    sp, Ta = np.asarray(sp), np.asarray(Ta)
 
-    # find cd and ustar
+    # Find cd and ustar.
     if drag == 'largepond':
         cd10, sp10 = cdn(sp, z1, 'largepond')
     elif drag == 'smith':
@@ -224,7 +219,7 @@ def spshft(sp, z1, z2, drag='largepond', Ta=10.):
     elif drag == 'vera':
         cd10, sp10 = cdn(sp, z1, 'vera')
     else:
-        print('Unknown method')  # TODO: add a proper python error
+        print('Unknown method')  # FIXME: raise a proper python error!
 
     ustar = np.sqrt(cd10) * sp10
     sp_adj = sp10 + ustar * np.log(z2 / 10.) / kappa
@@ -232,8 +227,7 @@ def spshft(sp, z1, z2, drag='largepond', Ta=10.):
 
 
 def stress(sp, z=10., drag='largepond', rho_air=1.22, Ta=10.):
-    """
-    Computes the neutral wind stress.
+    """Computes the neutral wind stress.
 
     Parameters
     ----------
@@ -260,17 +254,14 @@ def stress(sp, z=10., drag='largepond', rho_air=1.22, Ta=10.):
     --------
     cdn
 
-    Notes
-    -----
-    TODO
-
     Examples
     --------
     >>> from airsea import windstress as ws
     >>> ws.stress([10., 0.2, 12., 20., 30., 50.], 10)
     array([  1.40300000e-01,   5.61200000e-05,   2.23113600e-01,
              8.73520000e-01,   2.67912000e+00,   1.14070000e+01])
-    >>> ws.stress([10., 0.2, 12., 20., 30., 50.], 15, 'smith', rho_air=1.02, Ta=23.)
+    >>> kw = dict(rho_air=1.02, Ta=23.)
+    >>> ws.stress([10., 0.2, 12., 20., 30., 50.], 15, 'smith', **kw)
     array([  1.21440074e-01,   5.32531576e-05,   1.88322389e-01,
              6.62091968e-01,   1.85325310e+00,   7.15282267e+00])
     >>> ws.stress([10., 0.2, 12., 20., 30., 50.], 8, 'vera')
@@ -291,9 +282,10 @@ def stress(sp, z=10., drag='largepond', rho_air=1.22, Ta=10.):
     08-05-1999: version 2.0
     11-26-2010: Filipe Fernandes, Python translation.
     """
-    z, sp, Ta, rho_air = map(np.asarray, (z, sp, Ta, rho_air))
+    z, sp = np.asarray(z), np.asarray(sp)
+    Ta, rho_air = np.asarray(Ta), np.asarray(rho_air)
 
-    # find cd and ustar
+    # Find cd and ustar.
     if drag == 'largepond':
         cd, sp = cdn(sp, z, 'largepond')
     elif drag == 'smith':
@@ -301,277 +293,8 @@ def stress(sp, z=10., drag='largepond', rho_air=1.22, Ta=10.):
     elif drag == 'vera':
         cd, sp = cdn(sp, z, 'vera')
     else:
-        print('Unknown method')  # TODO: add a proper python error
+        print('Unknown method')  # FIXME: raise a proper python error
 
     tau = rho_air * (cd * sp ** 2)
 
     return tau
-
-""" Wave effects on wind stress, higly experimental !!! """
-
-#"""
-#Wdnotes:
-#-------
-#Ua measured at height za for the effects of the wave boundary layer following the empirical model presented by Large, Morzel, and Crawford (1995), J. Phys. Oceanog., 25, 2959-2971. In particular, an analytic expression was found for the omega function (`omegalmc`) shown in their Fig. 9b, which allows the 'true' wind speed (Ut10) and stress at 10 m (assumed above the wave boundary layer height) to be computed using `wave10` and the true wind speed (Uta) at the measurement height za using `wave`. The Large et al model assumes neutral stability (reasonable for high winds and wave conditions) and uses a 10 m neutral drag law (`cdnve`) based on Vera (1983; unpublished manuscript). This drag law follows Large and Pond (1982) for winds above 10 m/s but increases at lower wind speeds like Smith (1987). The wave field is specified by the significant wave height Hw.
-
-#To compute 'true' wind speed Uta at za given Hw, use:
-#>>> Uta = wave(Ua, za, Hw)
-
-#To compute 'true' wind speed Ut at 10 m given Hw, use:
-#Ut10, (Ut10-U10) = wave10(Ua, za, Hw)
-
-#FIXME: add this as a test?
-#To plot the predicted effects of wave distortion on the wind Ua measured at the height za for a range of significant wave heights,
-#>>> Hw = range(0,8,2) # [m]
-#>>> y = waveplt(za)
-#subroutines called:
-#>>> y = omegalmc(x)
-#>>> cd10 = cdnve(u10)
-#"""
-
-#def omegalmc(x):
-    #"""
-    #Computes the log profile correction function due to wind distortion associated with surface waves.
-
-    #Parameters
-    #----------
-    #x : array_like
-        #za / Hw, where za is the measurement height and Hw is the dominant surface wave height. [FIXME]
-        #Assumes x is a vector with all elements greater than zr.
-
-    #Returns
-    #-------
-    #y : array_like
-        #log profile correction [FIXME]
-
-    #See Also
-    #--------
-    #TODO: wave10, wave, wavdist
-
-    #Notes
-    #-----
-    #Functional form is simplified (analytic) version of empirical omega curves shown in Fig. 9b of Large et al. 1995, with the wave-induced roughness length xr = 0.15.
-
-    #Examples
-    #--------
-    #>>> omegalmc([TODO])
-    #array([TODO])
-
-    #References
-    #----------
-    #.. [1] Large, Morzel, and Crawford (1995), J. Phys. Oceanog., 25, 2959-2971
-
-    #Modifications: Original from AIR_SEA TOOLBOX, Version 2.0
-    #03/08/1997: version 1.0
-    #08/05/1999: version 2.0
-    #11/26/2010: Filipe Fernandes, Python translation.
-    #"""
-    ## convert input to numpy array
-    #x = np.asarray(x)
-
-    #xr     = 0.15
-    #ylimit = -6
-    #y      = ylimit * np.ones( x.shape )
-    #i      = np.nonzero(x < 3.2967)
-    ## polynomial fit
-    #a   = -2.6
-    #p1  = -0.0199
-    #p2  =  0.0144
-    #p3  =  0.7660
-    #p4  =  0.0654
-
-    #x2  = x[i]**2
-    #x3  = x2 * x[i]
-
-    #y[i] = a * np.log( x[i] / xr ) + p1 * x3 + p2 * x2 + p3 * x[i] + p4
-    #return y
-
-#def wave10(Ua, za, Hw):
-    #"""
-    #Computes true 10 m wind speed U10 using the wind speed measured Ua at the height za and measured wave height Hw and the neutral log profile corrected for the effects of low-level distortion of the wind profile by surface waves.
-
-    #Parameters
-    #----------
-    #Ua : array_like
-         #wind speed [m s :sup:`-1`]
-    #za : float, array_like
-         #wind measurement height [m]
-    #Hw : float, array_like
-         #wave height [m]
-
-    #Returns
-    #-------
-    #U10 : array_like
-          #true 10 m wind speed [m s :sup:`-1`]
-    #delU : array_like
-           #difference between true and uncorrected 10 m wind speed [m s :sup:`-1`]
-
-    #Notes
-    #-----
-    #TODO
-
-    #Examples
-    #--------
-    #TODO
-
-    #References
-    #----------
-    #.. [1] Large, Morzel, and Crawford (1995), J. Phys. Ocean., 25, 2959-2971.
-
-    #Modifications: Original from AIR_SEA TOOLBOX, Version 2.0
-    #8/31/98: version 1.1
-    #8/5/99: version 2.0
-    #11/26/2010: Filipe Fernandes, Python translation.
-    #"""
-    ## convert input to numpy array
-    #Ua = np.asarray(Ua) ; za = np.asarray(za) ; Hw = np.asarray(Hw)
-
-    #tol = 0.001 # change in u10 to stop iteration
-    #zs  = 10 # reference height
-    #Xia = za / Hw
-    #Xis = zs / Hw
-
-    ## compute uncorrected 10 m wind speed and ustar (as initial guess in iteration)
-    #cd10, u10 = cdnve(Ua, za) # Vera (1983)
-    #Ustar = np.sqrt(cd10) * u10
-
-    ## compute corrected 10 m wind speed
-    #U10  = u10
-    #U10o = 0
-    #k    = 0
-
-    #while np.abs( U10 - U10o ).max() > tol and  k < 15:
-        #U10o = U10
-        #k    = k + 1
-        #Ustar = np.sqrt( cdnve(U10, 10) * U10**2)
-        #U10   = Ua + Ustar * (np.log( zs / za ) - omegalmc(Xis) + omegalmc(Xia) ) / kappa
-
-
-    #if k == 15:
-        #print 'Iteration may not have converged'
-
-    #delU = U10 - u10
-
-    #return U10, delU
-
-#def wave(Ua, za, Hw):
-    #"""
-    #Computes the true wind speed Ut at the measurement height za using the wind speed Ua measured at za and measured wave height Hw.
-
-    #Parameters
-    #----------
-    #Ua : array_like
-         #wind speed [m s :sup:`-1`]
-    #za : float, array_like
-         #wind measurement height [m]
-    #Hw : float, array_like
-         #wave height [m]
-
-    #Returns
-    #-------
-    #Ut : array_like
-          #true wind speed [m s :sup:`-1`]
-
-    #Notes
-    #-----
-    #TODO
-
-    #Examples
-    #--------
-    #TODO
-
-    #References
-    #----------
-    #.. [1] Large, Morzel, and Crawford (1995), J. Phys. Oceanog., 25, 2959-2971.
-
-    #Modifications: Original from AIR_SEA TOOLBOX, Version 2.0
-    #05/05/1997: version 1.0
-    #07/28/1999: version 1.1
-    #08/05/1999: version 2.0
-    #11/26/2010: Filipe Fernandes, Python translation.
-    #"""
-    ## convert input to numpy array
-    #Ua = np.asarray(Ua) ; za = np.asarray(za) ; Hw = np.asarray(Hw)
-
-    #k   = 0.4 #FIXME: kappa
-    #z10 = 10
-    #A = np.log( z10 / za ) / k
-
-    ## eliminate any Ua==0
-    #jj = np.nonzero(Ua==0)
-    #Ua[jj] = 0.01 * np.ones( Ua[jj].shape )
-
-    ## compute uncorrected 10 m wind speed
-    #u10 = Ua # initial guess
-    #for n in range(1, 11, 1):
-        #ustar = np.sqrt( cdnve(u10) * u10**2 )
-        #u10   = Ua + ustar * A
-
-    ## compute corrected 10 m wind speed
-    #Ustar = ustar
-    #U10   = u10 #initial guesses
-    #Za    = za / Hw
-    #Z10   = z10 / Hw
-
-    #for n in range(1, 11, 1):
-        #Ustar = np.sqrt( cdnve(U10) * U10**2, za ) # FIXME: za was missing from the original, which was broken...
-        #U10   = Ua + Ustar * ( np.log( z10 / za ) - omegalmc(Z10) + omegalmc(Za) ) / k
-
-    ## compute 'true' wind speed at za using U10, Ustar
-    #Ut = U10 - Ustar * A
-
-    #return Ut
-
-#def wavdist(za):
-    #"""
-    #FIXME: ?
-    #Compute the wave distortion effects on wind at za for the following significant wave heights Hw = range(0,10,2) in meters.
-
-    #Parameters
-    #----------
-    #za : array_like
-         #wind measurement height [m]
-
-    #Returns
-    #-------
-    #TODO
-
-    #See Also
-    #--------
-    #TODO
-
-    #Examples
-    #--------
-    #TODO
-
-    #References
-    #----------
-    #TODO
-
-    #Modifications: Original from AIR_SEA TOOLBOX, Version 2.0
-    #05/05/1997: version 1.0
-    #04/10/1998: version 1.1
-    #08/05/1999: version 2.0
-    #11/26/2010: Filipe Fernandes, Python translation.
-    #"""
-    ## convert input to numpy array
-    #za = np.asarray(za)
-
-    #Hw = np.arange(0,10,2)
-    #Ua = np.arange(0.01, 20.01, 0.01)
-    #N  = len(Hw)
-    #M  = len(Ua)
-    ##Ut = np.zeros((M, N))
-    #Ut = []
-
-    #for n in range(0, N+1, 1):
-        ##Ut = wave( Ua, za, Hw[n] )
-        #Ut.append( wave( Ua, za, Hw[n] ) )
-
-    ##plot(Ua,Ut)
-    ##title(['Predicted effects of wave distortion on wind speed at height ',num2str(za),' m'])
-    ##xlabel('Measured wind speed Ua (m/s)')
-    ##ylabel('Predicted wind speed Ut (m/s)')
-    ##text(10,2,'Wave height increment = 2 m')
-
-    #return Ua, Ut
