@@ -27,6 +27,9 @@ def read(*filenames, **kwargs):
 long_description = read('README.txt', 'CHANGES.txt')
 LICENSE = read('LICENSE.txt')
 
+source = 'http://pypi.python.org/packages/source'
+install_requires = ['numpy']
+
 
 classifiers = """\
 Development Status :: 1 - Planning
