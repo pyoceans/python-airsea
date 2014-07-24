@@ -13,7 +13,7 @@ sigmaSB = 5.6697e-8
 eps_air = 0.62197
 
 # Conversion factor for [:math:`^\\circ` C] to [:math:`^\\circ` K].
-CtoK = 273.15  # 273.16
+CtoK = 273.16  # 273.15
 
 # Gas constant for dry air [J kg :sup:`-1` K :sup:`-1`].
 gas_const_R = 287.04  # NOTE: 287.1 in COARE.
