@@ -385,9 +385,9 @@ def cloudcor(C, optns, lat):
     C : array_like FIXME
         cloud fraction FIXME
     optns : str, int
-            'clarke', Clarke (1974) corrections for np.abs(lat)<50.
-            'bunker', Bunker (1976) corrections for North Atlantic.
-            [a1 a2] -> use a correction factor of [1 - a1*C - a2*C**2 ].
+           'clarke', Clarke (1974) corrections for np.abs(lat)<50.
+           'bunker', Bunker (1976) corrections for North Atlantic.
+           [a1 a2] -> use a correction factor of [1 - a1*C - a2*C**2 ].
     lat : array_like FIXME: or float
           latitude in decimal degrees north [-90..+90].
 
@@ -485,7 +485,7 @@ def cloudcor(C, optns, lat):
     return Fc
 
 
-def visc_air(Ta):
+def viscair(Ta):
     """Computes the kinematic viscosity of dry air as a function of air
     temperature
 
@@ -499,32 +499,12 @@ def visc_air(Ta):
     visa : array_like
            [m :sup:`2` s :sup:`-1`]
 
-    See Also
-    --------
-    hfbulktc, cdn
-    sw.visc
-
-    Notes
-    -----
-    sw.visc from python seawater package
-
-    Examples
-    --------
-    >>> from airsea import atmosphere as asea
-    >>> asea.visc_air([[0.1, 5., 15],[22.8, 28.9, 31.4]])
-    array([[  1.32686758e-05,   1.36964784e-05,   1.45857532e-05],
-           [  1.52942886e-05,   1.58573695e-05,   1.60903922e-05]])
-
     References
     ----------
     .. [1] Andreas (1989), CRREL Report 89-11.
 
-    Modifications: Original from COARE 3.0
-    11/26/2010: Filipe Fernandes, Python translation.
     """
-    # convert input to numpy array
-    Ta = np.asarray(Ta)
 
-    visa = 1.326e-5 * (1 + 6.542e-3 * Ta + 8.301e-6 * Ta ** 2 - 4.84e-9 *
-                       Ta ** 3)
-    return visa
+    Ta = np.aanysarray(Ta)
+
+    return 1.326e-5 * (1 + 6.542e-3 * Ta + 8.301e-6 * Ta**2 - 4.84e-9 * Ta**3)
