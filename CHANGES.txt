@@ -1,0 +1,7 @@
+Version 0.1.1
+
+* Re-organized to mimic Matlab airsea functionality.
+
+Version 0.1.0
+
+* First version derived from several misc script.
