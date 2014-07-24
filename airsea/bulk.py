@@ -2,17 +2,34 @@ from warnings import warn
 
 import numpy as np
 import seawater as sw
+from functools import wraps
+from oceans.sw_extras import visc, tcond
 from .atmosphere import viscair, qsat
 from .windstress import cdn
 from .constant import (Charnock_alpha, R_roughness, gas_const_R, Qsat_coeff,
-                       eps_air, kappa, CtoK, cp, g)
+                       emiss_lw, sigmaSB, eps_air, kappa, CtoK, cp, g)
+
+
+def to_array(a):
+    return np.atleast_1d(np.asanyarray(a))
+
+
+def ensure_atleast_1d(f):
+    """Decorator o make all *args in to atleast_1d arrays."""
+    @wraps(f)
+    def wrapper(*args, **kw):
+        newargs = [to_array(a) for a in args]
+        ret = f(*newargs, **kw)
+        return ret
+    wrapper.__wrapped__ = f
+    return wrapper
 
 
 # Default values used in Fairall et al, 1996
 
 CVB_depth = 600  # Depth of convective boundary layer in atmosphere [m].
 beta_conv = 1.25  # Scaling constant for gustiness.
-min_gustiness = 0.5  # min. "gustiness".  i.e. Unresolved fluctuations) [m/s]
+min_gustiness = 0.5  # min. "gustiness".  i.e. Unresolved fluctuations) [m s-1]
 # should keep this strictly >0, otherwise bad stuff might happen (divide by
 # zero errors).
 
@@ -96,15 +113,15 @@ def psi(zet, utc=True):
 
     return y
 
-
+@ensure_atleast_1d
 def hfbulktc(ur, zr, Ta, zt, rh, zq, Pa, Ts, **kw):
     """Computes sensible and latent heat fluxes and other variables.
 
-            Hs      = sensible heat flux INTO ocean [W/m^2]
-            Hl      = latent heat flux INTO ocean [W/m^2]
-            Hl_webb = Webb correction to latent heat flux INTO ocean [W/m^2]
+            Hs      = sensible heat flux INTO ocean [W m**-2]
+            Hl      = latent heat flux INTO ocean [W m**-2]
+            Hl_webb = Webb correction to latent heat flux INTO ocean [W m**-2]
             stress  = wind stress [N/m^2]
-            U_star  = velocity friction scale [m/s]
+            U_star  = velocity friction scale [m s-1]
             T_star  = temperature scale [deg C]
             Q_star  = humidity scale [kg/kg]
             L       = Monin-Obukhov length [m]
@@ -119,18 +136,18 @@ def hfbulktc(ur, zr, Ta, zt, rh, zq, Pa, Ts, **kw):
 
     Based on the following buoy input data:
 
-              ur     = wind speed [m/s] measured at height zr [m]
+              ur     = wind speed [m s-1] measured at height zr [m]
               Ta     = air temperature [C] measured at height zt [m]
               rh     = relative humidity [%] measured at height zq [m]
               Pa     = air pressure [mb]
               Ts     = sea surface temperature [C]
               sal    = salinity [psu (PSS-78)]
                        (optional - only needed for cool-skin)
-              dlw    = downwelling (INTO water) longwave radiation [W/m^2]
+              dlw    = downwelling (INTO water) longwave radiation [W m**-2]
                        (optional - only needed for cool-skin)
-              dsw    = measured insolation [W/m^2]
+              dsw    = measured insolation [W m**-2]
                        (optional - only needed for cool-skin)
-              nsw    = net shortwave radiation INTO the water [W/m^2]
+              nsw    = net shortwave radiation INTO the water [W m**-2]
                        (optional - only needed for cool-skin)
 
     where ur, Ta, rh, Pa, Ts, zr, zt, and zq (and optional sal, dlw,
@@ -170,18 +187,11 @@ def hfbulktc(ur, zr, Ta, zt, rh, zq, Pa, Ts, **kw):
     11-26-2010: Filipe Fernandes, Python translation.
     """
 
-    # Change to column vectors.
-    packed = map(np.asanyarrray, (ur, Ta, rh, Ts, Pa, zr, zt, zq))
-    packed = np.broadcast_arrays(*packed)
-    ur, Ta, rh, Ts, Pa, zr, zt, zq = packed
-
+    # Optional cool-skin stuff
     sal = kw.pop('sal', None)
     dlw = kw.pop('dlw', None)
     dsw = kw.pop('dsw', None)
     nsw = kw.pop('nsw', None)
-    if sal:  # Optional cool-skin stuff
-        sal, dlw, dsw, nsw = map(np.asanyarrray, (sal, dlw, dsw, nsw))
-        sal, dlw, dsw, nsw = np.broadcast_arrays(sal, dlw, dsw, nsw)
 
     # Initialize various constants.
     tol = 0.001  # Tolerance on Re changes to make sure soln has converged.
@@ -272,10 +282,9 @@ def hfbulktc(ur, zr, Ta, zt, rh, zq, Pa, Ts, **kw):
 
         if sal:
             # Compute cool-skin parameters.
-            delta, Dter, Dqer = cool_skin(sal, Ts-Dter, rho, cp, Pa,
-                                          U_star, T_star, Q_star,
-                                          dlw, dsw, nsw, delta, g, gas_const_R,
-                                          CtoK, Qsat_coeff)
+            delta, Dter, Dqer = cool_skin(sal, Ts-Dter, rho, cp, Pa, U_star,
+                                          T_star, Q_star, dlw, dsw, nsw, delta,
+                                          g, gas_const_R, CtoK, Qsat_coeff)
 
     ii = np.logical_or(np.abs(Reu-ReuO) > tol, np.abs(Ret-RetO) > tol)
     ii = np.logical_or(ii, np.abs(Req-ReqO) > tol)
@@ -320,6 +329,7 @@ def hfbulktc(ur, zr, Ta, zt, rh, zq, Pa, Ts, **kw):
                 Q_star, L, zetu, CD, CT, CQ, RI)
 
 
+@ensure_atleast_1d
 def cool_skin(sal, Tw, rhoa, cpa, Pa, U_star, T_star, Q_star,  dlw, dsw, nsw,
               delta, g, Rgas, CtoK, Qsat_coeff):
     """Computes the cool-skin parameters.  This code follows the FORTRAN
@@ -335,14 +345,14 @@ def cool_skin(sal, Tw, rhoa, cpa, Pa, U_star, T_star, Q_star,  dlw, dsw, nsw,
     rhoa : air density [kg/m^3]
     cpa : specific heat capacity of air [J/kg/C]
     Pa : air pressure [mb]
-    U_star : friction velocity including gustiness [m/s]
+    U_star : friction velocity including gustiness [m s-1]
     T_star : temperature scale [C]
     Q_star : humidity scale [kg/kg]
-    dlw : downwelling (INTO water) longwave radiation [W/m^2]
-    dsw : measured insolation [W/m^2]
-    nsw : net shortwave radiation INTO water [W/m^2]
+    dlw : downwelling (INTO water) longwave radiation [W m**-2]
+    dsw : measured insolation [W m**-2]
+    nsw : net shortwave radiation INTO water [W m**-2]
     delta : cool-skin layer thickness [m]
-    g : gravitational constant [m/s^2]
+    g : gravitational constant [m s**-2]
     Rgas : gas constant for dry air [J/kg/K]
     CtoK : conversion factor for deg C to K
     Qsat_coeff : saturation specific humidity coefficient
@@ -363,8 +373,8 @@ def cool_skin(sal, Tw, rhoa, cpa, Pa, U_star, T_star, Q_star,  dlw, dsw, nsw,
     beta_sal = sw.beta(sal, Tw, 0)  # Saline contraction coeff [1/psu].
     cpw = sw.cp(sal, Tw, 0)  # Specific heat capacity  [J/kg/C].
     rhow = sw.dens0(sal, Tw)  # Density at atmospheric press [kg/m^3].
-    viscw = sw.visc(sal, Tw, 0)  # kinematic viscosity of sea-water [m^2/s].
-    tcondw = sw.tcond(sal, Tw, 0)  # thermal conductivity of sea-water [W/m/K].
+    viscw = visc(sal, Tw, 0)  # kinematic viscosity of sea-water [m^2/s].
+    tcondw = tcond(sal, Tw, 0)  # thermal conductivity of sea-water [W/m/K].
 
     # The following are values used for COARE.
     # alpha    = 2.1e-5*(Tw+3.2)**0.79
@@ -398,14 +408,15 @@ def cool_skin(sal, Tw, rhoa, cpa, Pa, U_star, T_star, Q_star,  dlw, dsw, nsw,
 
     # Compute deltaSc = fc*Sns, see sec. 2.4 (p. 1297-1298) in cool-skin paper
     # 3 choices; comment out those that are not used!
-    deltaSc  = np.zeros_like(Tw)
-    ipos_nsw = nsw > 0
+    deltaSc = np.zeros_like(Tw)
+    ipos_nsw = np.where(nsw > 0)[0]
+
     # Paulson and Simpson (1981)
     deltaSc[ipos_nsw] = f_c(delta[ipos_nsw], 1) * nsw[ipos_nsw]
     # COARE approx. to Paulson.
-    #deltaSc[ipos_nsw] = f_c(delta[ipos_nsw], 2) * nsw[ipos_nsw]
+    # deltaSc[ipos_nsw] = f_c(delta[ipos_nsw], 2) * nsw[ipos_nsw]
     # Hasse (1971).
-    #deltaSc[ipos_nsw] = f_c(delta[ipos_nsw], 3) * nsw[ipos_nsw]
+    # deltaSc[ipos_nsw] = f_c(delta[ipos_nsw], 3) * nsw[ipos_nsw]
 
     qcol = qout - deltaSc
 
@@ -416,7 +427,7 @@ def cool_skin(sal, Tw, rhoa, cpa, Pa, U_star, T_star, Q_star,  dlw, dsw, nsw,
 
     ipos_qcol = qcol > 0
     # eqn. 17 in cool-skin paper.
-    alphaQb[ipos_qcol] = (alpha[ipos_qcol].*qcol[ipos_qcol] + sal[ipos_qcol] *
+    alphaQb[ipos_qcol] = (alpha[ipos_qcol] * qcol[ipos_qcol] + sal[ipos_qcol] *
                           beta_sal[ipos_qcol] * hlb[ipos_qcol] *
                           cpw[ipos_qcol] / Le[ipos_qcol])
 
@@ -435,7 +446,9 @@ def cool_skin(sal, Tw, rhoa, cpa, Pa, U_star, T_star, Q_star,  dlw, dsw, nsw,
 
     return delta, Dter, Dqer
 
-def fc = f_c(delta, option=1):
+
+@ensure_atleast_1d
+def f_c(delta, option=1):
     """
     F_C: Computes the absorption coefficient fc.
     fc = F_C(delta, option) computes the absorption coefficient fc.
@@ -466,20 +479,70 @@ def fc = f_c(delta, option=1):
         # 8) 2.4-2.7
         # 9) 2.7-3.0
         # F_i is the amplitude
-        F_i = np.array([0.237, 0.360, 0.179, 0.087, 0.080, 0.0246, 0.025, 0.007,
-                        0.0004])
-        F_i1 = repmat(F_i, len(delta), 1)
+        F_i = np.array([0.237, 0.360, 0.179, 0.087,
+                        0.080, 0.0246, 0.025, 0.007, 0.0004])
+        # F_i1 = repmat(F_i, len(delta), 1)
         # Gam_i is the absorption length [m].
-        Gam_i = np.array([34.8, 2.27, 3.15e-2, 5.48e-3, 8.32e-4, 1.26e-4,
-                          3.13e-4, 7.82e-5, 1.44e-5])
-        Gam_i1 = repmat(Gam_i, len(delta), 1)
-        delta1 = repmat(delta, 1, len(Gam_i))
+        Gam_i = np.array([34.8, 2.27, 3.15e-2, 5.48e-3, 8.32e-4,
+                          1.26e-4, 3.13e-4, 7.82e-5, 1.44e-5])
+        # Gam_i1 = repmat(Gam_i, len(delta), 1)
+        # delta1 = repmat(delta, 1, len(Gam_i))
         # fc is the absorption in the cool-skin layer of thickness delta.
-        fc = np.sum(F_i1 *(1-(Gam_i1 / delta1) * (1-np.exp(-delta1 / Gam_i1))), 2)
+        # fc = np.sum(F_i1 * (1 - (Gam_i1 / delta1) *
+        # (1 - np.exp(-delta1 / Gam_i1))), 2)
+        fc = np.sum(F_i * (1 - (Gam_i / delta[..., None]) *
+                           (1 - np.exp(-delta[..., None] / Gam_i))), axis=1)
     elif option == 2:
         # Use COARE approximation to Paulson and Simpson data.
         fc = 0.137 + 11 * delta - (6.6e-5 / delta) * (1-np.exp(-delta/8e-4))
-    elif option == 3
+    elif option == 3:
         # Use Hasse simple approximation.
         fc = 0.19
     return fc
+
+
+@ensure_atleast_1d
+def lwhf(Ts, dlw, dsw=None):
+    """
+    LWHF: computes net longwave heat flux following Dickey et al (1994).
+    qlw=LWHF(Ts,dlw) computes the net longwave heat flux into the ocean.
+    Following Dickey et al (1994), J. Atmos. Oceanic Tech., 11, 1057-1078,
+    the incident longwave flux can be corrected for sensor heating due to
+    insolation if you are using Epply or Kipp & Zonen CG1 pyrgeometers.
+    In this case, use qlw=LWHF(Ts,dlw,dsw). Epply is the default
+    pyrgeometer; change code for the Kipp & Zonen instrument.
+
+    Parameters
+    ----------
+    Ts : sea surface temperature [C]
+    dlw : (measured) downward longwave flux [W m**-2]
+    dsw : (measured) insolation [W m**-2] (needed for Eppley
+          or Kipp & Zonen pyrgeometers)
+
+    Returns
+    qlw : net longwave heat flux [W m**-2]
+
+    03-08-1997: version 1.0
+    08-19-1998: version 1.1 (revised for non-Epply pyrgeometers by RP)
+    04-09-1999: version 1.2 (included Kipp & Zonen CG1 pyrgeometers by AA)
+    08-05-1999: version 2.0
+    """
+    Ts, dlw = np.broadcast_arrays(Ts, dlw)
+
+    # Convert degC to degK.
+    ts = Ts + CtoK
+    # Correct dlw for sensor heating by insolation.
+    if dsw:
+        # This line is for Epply pyrgeometers.
+        dlwc = dlw-0.036 * dsw
+        # This line is for Kipp & Zonen CG1 pyrgeometers
+        # (the offset is specified as 25 W m**-2 at 1000 W m**-2).
+        # dlwc = dlw-0.025 * dsw
+    else:
+        dlwc = dlw
+
+    # Compute upward gray-body longwave flux.
+    lwup = -emiss_lw * sigmaSB * (ts**4)
+    # Compute net flux.
+    qlw = lwup + emiss_lw * dlwc
+    return qlw
