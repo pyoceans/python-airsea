@@ -1,14 +1,20 @@
 python-airsea
 =============
 
-.. image:: https://badge.fury.io/py/airsea.png
-   :target: http://badge.fury.io/py/airsea
-   :alt: Latest version
-.. image:: https://api.travis-ci.org/ocefpaf/python-airsea.png?branch=master
-   :target: https://travis-ci.org/ocefpaf/python-airsea
-   :alt: Travs-CI
+.. image:: http://img.shields.io/pypi/v/airsea.svg?style=flat
+   :target: https://pypi.python.org/pypi/airsea
+   :alt: Version_status
+.. image:: http://img.shields.io/pypi/dm/airsea.svg?style=flat
+   :target: https://pypi.python.org/pypi/airsea
+   :alt: Downloads
+.. image:: http://img.shields.io/travis/pyoceans/python-airsea/master.svg?style=flat
+   :target: https://travis-ci.org/pyoceans/python-airsea
+   :alt: Build_status
+.. image:: http://img.shields.io/badge/license-MIT-blue.svg?style=flat
+   :target: https://github.com/pyoceans/python-airsea/blob/master/LICENSE.txt
+   :alt: license
 .. image:: http://bottlepy.org/docs/dev/_static/Gittip.png
-   :target: https://www.gittip.com/ocefpaf/
+   :target: https://gratipay.com/~ocefpaf/
    :alt: Gittip
 
 This module is a translation of the original AIRSEA-2.0 MATLAB toolbox
