@@ -145,7 +145,9 @@ def qsat(Ta, Pa=P_default, sflag=True):
     1990/05/08: version 2.0
     2011/10/28: Python version
     """
-
+    
+    Ta, Pa = np.asarray(Ta), np.asarray(Pa)
+    
     # Original code
     # a = (1.004 * 6.112 * 0.6220) / Pa
     # q = a * np.exp((17.502 * Ta) / (240.97 + Ta))
@@ -153,7 +155,7 @@ def qsat(Ta, Pa=P_default, sflag=True):
     # Fortran code for COARE v2.5b
     ew = (6.1121 * (1.0007 + 3.46e-6 * Pa) *
           np.exp((17.502 * Ta) / (240.97 + Ta)))  # [mb]
-    qsat = 621.97 * (ew / (Pa - 0.378 * ew))  # [mb] -> [g/kg]
+    qsat = 0.62197 * (ew / (Pa - 0.378 * ew))  # [mb] -> [g/kg]
     qsat = (1.0 - 0.02 * sflag) * qsat  # flag for fresh (0) or salt (1) water
 
     # When it is multiplied by 0,98, i.e. sflag = 1, and T is SST, it is eq.3
