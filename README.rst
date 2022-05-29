@@ -7,8 +7,8 @@ python-airsea
 .. image:: http://img.shields.io/pypi/dm/airsea.svg?style=flat
    :target: https://pypi.python.org/pypi/airsea
    :alt: Downloads
-.. image:: http://img.shields.io/travis/pyoceans/python-airsea/master.svg?style=flat
-   :target: https://travis-ci.org/pyoceans/python-airsea
+.. image:: https://github.com/tompc35/python-airsea/actions/workflows/tests.yml/badge.svg
+   :target: https://github.com/tompc35/python-airsea/actions
    :alt: Build_status
 .. image:: http://img.shields.io/badge/license-MIT-blue.svg?style=flat
    :target: https://github.com/pyoceans/python-airsea/blob/master/LICENSE.txt

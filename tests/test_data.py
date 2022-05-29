@@ -8,23 +8,24 @@ from airsea.windstress import stress
 test_out = np.genfromtxt('tests/matlab/test_data_out.csv', delimiter=',')
 test2_5b = np.genfromtxt('tests/matlab/test2_5b.dat', skip_header=1)
 
-ur  = test2_5b[:, 1]
-zr  = 15
-Ta  = test2_5b[:, 3]
-zt  = 15
-Pa  = 1008*np.ones(np.shape(ur))
-q   = test2_5b[:, 4]
-zq  = 15
-Ts  = test2_5b[:, 13]
+ur = test2_5b[:, 1]
+zr = 15
+Ta = test2_5b[:, 3]
+zt = 15
+Pa = 1008*np.ones(np.shape(ur))
+q = test2_5b[:, 4]
+zq = 15
+Ts = test2_5b[:, 13]
 sal = 30*np.ones(np.shape(ur))
 dsw = test2_5b[:, 8]
 nsw = 0.945*dsw
 dlw = test2_5b[:, 9]
-rain= test2_5b[:, 10]
+rain = test2_5b[:, 10]
 
 rh  = q / qsat(Ta, Pa) / 10
 
 # Test atmosphere functions
+
 
 def test_airdens():
     test0 = air_dens(Ta, rh)
@@ -56,7 +57,7 @@ def test_viscair():
 
 
 # Test windstress functions
-#
+
 # Note that Matlab and Python versions have different tolerance thresholds 
 # for testing convergence of u10
 
@@ -71,7 +72,7 @@ def test_stresslp():
 def test_stresstc():
     test9 = stress(ur, zr, drag='smith')
     test10 = stress(ur, zr, Ta=Ta, drag='smith')
-    test11 = stress(ur, zr, Ta=Ta, rho_air=np.mean(test_out[:,0]), drag='smith')
+    test11 = stress(ur, zr, Ta=Ta, rho_air=np.mean(test_out[:, 0]), drag='smith')
     assert (np.allclose(test9, test_out[:, 9], atol=1e-6) &
             np.allclose(test10, test_out[:, 10], atol=1e-6) &
             np.allclose(test11, test_out[:, 11], atol=1e-6))
