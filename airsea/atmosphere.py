@@ -103,7 +103,7 @@ def air_dens(Ta, rh, Pa=P_default):
     return rhoa
 
 
-def qsat(Ta, Pa=P_default, sflag=True):
+def qsat(Ta, Pa=P_default, sflag=False):
     """Computes the specific humidity [kg/kg] at saturation at air temperature
     Ta [deg C].  Dependence on air pressure, Pa, is small, but is included as
     an optional input.
@@ -115,7 +115,7 @@ def qsat(Ta, Pa=P_default, sflag=True):
     Pa : array_like, optional
         air pressure [mb]
     sflag : bool
-        Salt water flag, True for Salt Water and False for Fresh Water.
+        Salt water flag, False for fresh water (default), True for salt water (for example, when SST is used as Ta in calculating latent heat flux)
 
     Returns
     -------
@@ -144,6 +144,7 @@ def qsat(Ta, Pa=P_default, sflag=True):
     1999/07/04: version 1.2 (revised as above by AA)
     1990/05/08: version 2.0
     2011/10/28: Python version
+    2022/05/29: changed default sflag (TC)
     """
     
     Ta, Pa = np.asarray(Ta), np.asarray(Pa)
