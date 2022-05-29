@@ -361,9 +361,9 @@ def relhumid(Td, Tw, Pa=1020, p_typ='screen'):
     Td, Tw, Pa = np.asarray(Td), np.asarray(Tw), np.asarray(Pa)
 
     # Psychrometric coefficient.
-    if p_typ is 'screen':
+    if p_typ == 'screen':
         A = 0.000799  # Natural screens.
-    elif p_typ is 'assman':
+    elif p_typ == 'assman':
         A = 0.000667  # Assmann-type with forced ventilation.
     else:
         print('unknown psychrometer type: %s' % p_typ)
