@@ -1,4 +1,12 @@
 
+% generate_test_data.m
+% --------------------
+%
+% Generate test data for Python airsea package
+%
+% Uses test2_5b.dat file included in Matlab airsea v2.0. Makes calculations and stores
+% the results in test_data_out.csv
+
 % VARIBLES:
 %
 %   ur     = wind speed [m/s] measured at height zr [m] 
@@ -71,18 +79,3 @@ out(:,13) = stressve(ur,zr);
 out(:,14) = stressve(ur,zr,mean(out(:,1)));
 
 writematrix(out,'test_data_out.csv');
-
-% % delq
-% dq = delq(Ts,Ta,rh);
-% 
-% % lwhf
-% qlw = lwhf(Ts,dlw);
-% qlw_Eppley = lwhf(Ts,dlw,dsw);
-
-% *** ep ***
-
-% *** relhumid ***
-
-% *** cloudcor ***
-
-

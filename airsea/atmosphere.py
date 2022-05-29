@@ -146,9 +146,9 @@ def qsat(Ta, Pa=P_default, sflag=False):
     2011/10/28: Python version
     2022/05/29: changed default sflag (TC)
     """
-    
+
     Ta, Pa = np.asarray(Ta), np.asarray(Pa)
-    
+
     # Original code
     # a = (1.004 * 6.112 * 0.6220) / Pa
     # q = a * np.exp((17.502 * Ta) / (240.97 + Ta))
