@@ -82,8 +82,8 @@ def air_dens(Ta, rh, Pa=P_default):
     --------
     >>> from airsea import atmosphere as asea
     >>> asea.air_dens([5., 15., 23.1], 95.)
-    array([ 1.27361105,  1.22578105,  1.18750778])
-    >>> asea.air_dens([5., 15., 23.1], [95, 100, 50], 900)
+    array([1.24851638, 1.20117037, 1.16959788])
+    >>> asea.air_dens([5., 15., 23.1], [95, 100, 50], 1000.)
     array([ 1.12331233,  1.08031123,  1.05203796])
 
     Modifications: Original from AIR_SEA TOOLBOX, Version 2.0
@@ -194,8 +194,8 @@ def satvap(Ta, Pa=P_default):
     array([ 17.11594161,  31.823173  ,  74.32668994])
     >>> asea.satvap([15., 25., 40.], 900.)
     array([ 17.10646652,  31.80464856,  74.2782608 ])
-    >>> asea.satvap([15., 25., 40.],[900.,800., 1030])
-    array([ 17.10646652,  31.78921152,  74.3307257 ])
+    >>> asea.satvap([15., 25., 40.],[900.,1000., 1030])
+    array([17.10646652, 31.8200856 , 74.3307257 ])
 
     References
     ----------

@@ -1,4 +1,4 @@
-name: airsea-test
+name: tests
 
 on: [push]
 
