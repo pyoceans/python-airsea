@@ -2,7 +2,7 @@
 
 [![pip](http://img.shields.io/pypi/v/airsea.svg?style=flat)](https://pypi.python.org/pypi/airsea)
 ![pip-downloads](http://img.shields.io/pypi/dm/airsea.svg?style=flat)
-[![build-status](https://github.com/tompc35/python-airsea/actions/workflows/tests.yml/badge.svg?style=flat)](https://github.com/tompc35/python-airsea/actions)
+[![build-status](https://github.com/pyoceans/python-airsea/actions/workflows/tests.yml/badge.svg?style=flat)](https://github.com/pyoceans/python-airsea/actions)
 [![license](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/pyoceans/python-airsea/blob/master/LICENSE.txt)
 
 A translation of the original AIRSEA-2.0 [MATLAB toolbox](https://github.com/sea-mat/air-sea) for calculating the properties of airsea fluxes.
