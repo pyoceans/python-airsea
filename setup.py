@@ -25,7 +25,7 @@ def read(*filenames, **kwargs):
     return sep.join(buf)
 
 
-long_description = read('README.rst', 'CHANGES.txt')
+long_description = read('README.md', 'CHANGES.txt')
 LICENSE = read('LICENSE.txt')
 
 source = 'http://pypi.python.org/packages/source'
@@ -56,8 +56,8 @@ config = dict(name='airsea',
               description='AirSea Libray for Python',
               author='Filipe Fernandes',
               author_email='ocefpaf@gmail.com',
-              maintainer='Filipe Fernandes',
-              maintainer_email='ocefpaf@gmail.com',
+              maintainer='Tom Connolly',
+              maintainer_email='thomas.p.connolly@sjsu.edu',
               url='http://pypi.python.org/pypi/airsea/',
               # download_url='%s/a/airsea/airsea-%s.tar.gz' % (source, verstr),
               platforms='any',
