@@ -26,7 +26,7 @@ ex(1:6,10) = rhadj([98., 95., 94., 93., 10., 20.], 98.);
 Qlat = [550., 450., 350.];
 rfd = [10., 15., 35.]; % precip rate (mm/min)
 
-%note difference in rfd input units: Matlab: mm/min, Python: m/s
+% note difference in rfd input units: Matlab: mm/min, Python: m/s
 [E,P] = ep(rfd, Qlat);
 ex(1:3,11) = E;
 ex(1:3,12) = P;
@@ -43,8 +43,6 @@ ex(1:3,17:18) = viscair([[0.1, 5., 15];[22.8, 28.9, 31.4]])';
 ex(1:6,19) = cdnlp([10., 0.2, 12., 20., 30., 50.], 10);
 ex(1:6,20) = cdnve([10., 0.2, 12., 20., 30., 50.], 15);
 ex(1:6,21) = cdntc([10., 0.2, 12., 20., 30., 50.], 20, 20.);
-
-
 
 [sp1,ustar1] = spshftlp([10., 0.2, 12., 20., 30., 50.], 10, 10);
 ex(1:6,22) = sp1;

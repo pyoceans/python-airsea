@@ -44,5 +44,8 @@ venv.bak/
 .spyderproject
 .spyproject
 
-#Editor specific
+# Editor specific
 .vscode
+
+# Matlab autosave files
+*.asv
