@@ -24,7 +24,8 @@ def read(*filenames, **kwargs):
             buf.append(f.read())
     return sep.join(buf)
 
-long_description = read('README.rst', 'CHANGES.txt')
+
+long_description = read('README.md', 'CHANGES.txt')
 LICENSE = read('LICENSE.txt')
 
 source = 'http://pypi.python.org/packages/source'
@@ -49,17 +50,16 @@ config = dict(name='airsea',
               version=verstr,
               packages=['airsea'],
               test_suite='tests',
-              use_2to3=True,
               license=LICENSE,
               long_description=long_description,
               classifiers=[_f for _f in classifiers.split("\n") if _f],
               description='AirSea Libray for Python',
               author='Filipe Fernandes',
               author_email='ocefpaf@gmail.com',
-              maintainer='Filipe Fernandes',
-              maintainer_email='ocefpaf@gmail.com',
+              maintainer='Tom Connolly',
+              maintainer_email='thomas.p.connolly@sjsu.edu',
               url='http://pypi.python.org/pypi/airsea/',
-              #download_url='%s/a/airsea/airsea-%s.tar.gz' % (source, verstr),
+              # download_url='%s/a/airsea/airsea-%s.tar.gz' % (source, verstr),
               platforms='any',
               keywords=['oceanography', 'data analysis', 'air-sea'],
               install_requires=install_requires)

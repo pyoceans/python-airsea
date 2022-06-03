@@ -82,8 +82,8 @@ def air_dens(Ta, rh, Pa=P_default):
     --------
     >>> from airsea import atmosphere as asea
     >>> asea.air_dens([5., 15., 23.1], 95.)
-    array([ 1.27361105,  1.22578105,  1.18750778])
-    >>> asea.air_dens([5., 15., 23.1], [95, 100, 50], 900)
+    array([1.24851638, 1.20117037, 1.16959788])
+    >>> asea.air_dens([5., 15., 23.1], [95, 100, 50], 1000.)
     array([ 1.12331233,  1.08031123,  1.05203796])
 
     Modifications: Original from AIR_SEA TOOLBOX, Version 2.0
@@ -103,7 +103,7 @@ def air_dens(Ta, rh, Pa=P_default):
     return rhoa
 
 
-def qsat(Ta, Pa=P_default, sflag=True):
+def qsat(Ta, Pa=P_default, sflag=False):
     """Computes the specific humidity [kg/kg] at saturation at air temperature
     Ta [deg C].  Dependence on air pressure, Pa, is small, but is included as
     an optional input.
@@ -115,7 +115,7 @@ def qsat(Ta, Pa=P_default, sflag=True):
     Pa : array_like, optional
         air pressure [mb]
     sflag : bool
-        Salt water flag, True for Salt Water and False for Fresh Water.
+        Salt water flag, False for fresh water (default), True for salt water (for example, when SST is used as Ta in calculating latent heat flux)
 
     Returns
     -------
@@ -144,10 +144,11 @@ def qsat(Ta, Pa=P_default, sflag=True):
     1999/07/04: version 1.2 (revised as above by AA)
     1990/05/08: version 2.0
     2011/10/28: Python version
+    2022/05/29: changed default sflag (TC)
     """
-    
+
     Ta, Pa = np.asarray(Ta), np.asarray(Pa)
-    
+
     # Original code
     # a = (1.004 * 6.112 * 0.6220) / Pa
     # q = a * np.exp((17.502 * Ta) / (240.97 + Ta))
@@ -193,8 +194,8 @@ def satvap(Ta, Pa=P_default):
     array([ 17.11594161,  31.823173  ,  74.32668994])
     >>> asea.satvap([15., 25., 40.], 900.)
     array([ 17.10646652,  31.80464856,  74.2782608 ])
-    >>> asea.satvap([15., 25., 40.],[900.,800., 1030])
-    array([ 17.10646652,  31.78921152,  74.3307257 ])
+    >>> asea.satvap([15., 25., 40.],[900.,1000., 1030])
+    array([17.10646652, 31.8200856 , 74.3307257 ])
 
     References
     ----------
@@ -360,9 +361,9 @@ def relhumid(Td, Tw, Pa=1020, p_typ='screen'):
     Td, Tw, Pa = np.asarray(Td), np.asarray(Tw), np.asarray(Pa)
 
     # Psychrometric coefficient.
-    if p_typ is 'screen':
+    if p_typ == 'screen':
         A = 0.000799  # Natural screens.
-    elif p_typ is 'assman':
+    elif p_typ == 'assman':
         A = 0.000667  # Assmann-type with forced ventilation.
     else:
         print('unknown psychrometer type: %s' % p_typ)
